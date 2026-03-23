@@ -1,6 +1,7 @@
 from textual.app import ComposeResult
 from textual.widgets import RichLog
 from textual.widget import Widget
+from textual.css.query import NoMatches
 
 
 class LogPanel(Widget):
@@ -18,8 +19,11 @@ class LogPanel(Widget):
 
     def write(self, text: str, style: str = "white") -> None:
         """Aggiunge una riga al log con lo stile specificato."""
-        log = self.query_one("#log-output", RichLog)
-        log.write(f"[{style}]{text}[/{style}]")
+        try:
+            log = self.query_one("#log-output", RichLog)
+            log.write(f"[{style}]{text}[/{style}]")
+        except NoMatches:
+            pass
 
     def write_error(self, text: str) -> None:
         self.write(text, style="red")
@@ -31,4 +35,7 @@ class LogPanel(Widget):
         self.write(text, style="cyan")
 
     def clear(self) -> None:
-        self.query_one("#log-output", RichLog).clear()
+        try:
+            self.query_one("#log-output", RichLog).clear()
+        except NoMatches:
+            pass
