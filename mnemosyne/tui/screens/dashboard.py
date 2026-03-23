@@ -132,13 +132,19 @@ class DashboardScreen(Widget):
     def _update_ga4_panel(self, ga4: dict | None, gsc: dict | None) -> None:
         ga4_text = "GA4: N/D"
         if ga4:
-            sessions = ga4.get("sessions", "?")
-            ga4_text = f"Sessions 7d: {sessions}"
+            sessions = ga4.get("sessions", {}).get("value", "?")
+            users = ga4.get("users", {}).get("value", "?")
+            pageviews = ga4.get("pageviews", {}).get("value", "?")
+            ga4_text = f"GA4 (7d)\nSessions: {sessions}\nUsers: {users}\nPageviews: {pageviews}"
 
         gsc_text = "GSC: N/D"
         if gsc:
-            top_query = gsc.get("top_query", "?")
-            avg_pos = gsc.get("avg_position", "?")
-            gsc_text = f"Top query: {top_query}\nAvg pos: {avg_pos}"
+            clicks = gsc.get("clicks", {}).get("value", "?")
+            impressions = gsc.get("impressions", {}).get("value", "?")
+            ctr = gsc.get("ctr", {}).get("value", "?")
+            pos = gsc.get("position", {}).get("value", "?")
+            ctr_pct = f"{ctr * 100:.1f}%" if isinstance(ctr, float) else "?"
+            pos_fmt = f"{pos:.1f}" if isinstance(pos, float) else "?"
+            gsc_text = f"GSC (7d)\nClicks: {clicks}\nImpr: {impressions}\nCTR: {ctr_pct}\nPos: {pos_fmt}"
 
-        self.query_one("#ga4-stats", Static).update(f"{ga4_text}\n{gsc_text}")
+        self.query_one("#ga4-stats", Static).update(f"{ga4_text}\n\n{gsc_text}")
