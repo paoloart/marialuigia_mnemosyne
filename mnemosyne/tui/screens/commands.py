@@ -54,6 +54,9 @@ class CommandsScreen(Widget):
 
     _running: bool = False
 
+    def on_mount(self) -> None:
+        self._running = False
+
     def compose(self) -> ComposeResult:
         with Horizontal():
             with Vertical(id="cmd-list"):
@@ -86,6 +89,7 @@ class CommandsScreen(Widget):
         self._running = True
         log = self.query_one("#cmd-log", LogPanel)
         btn = self.query_one(f"#{btn_id}", Button)
+        btn.remove_class("done", "error")
         btn.add_class("running")
         log.write_info(f"[{datetime.now().strftime('%H:%M:%S')}] Avvio {btn_id}...")
         try:
