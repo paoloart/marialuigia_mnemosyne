@@ -4,7 +4,7 @@ import shutil
 from datetime import datetime
 from textual.app import ComposeResult
 from textual.widget import Widget
-from textual.widgets import Input, Label, Static
+from textual.widgets import Input, Static
 from textual.containers import Vertical
 from textual.binding import Binding
 from mnemosyne.tui.widgets.log_panel import LogPanel
@@ -90,5 +90,5 @@ class ClaudeScreen(Widget):
         # app.suspend() cede il controllo del terminale al processo figlio
         # e lo riprende quando l'utente esce dalla sessione Claude.
         # Funziona su macOS Terminal, iTerm2, tmux. Non garantito in CI.
-        async with self.app.suspend():
+        with self.app.suspend():
             subprocess.run([claude_path])
