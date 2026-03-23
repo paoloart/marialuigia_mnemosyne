@@ -16,8 +16,19 @@ def main():
     from mnemosyne import config
 
     if command == "tui":
+        import shutil
         from mnemosyne.tui.app import MnemosyneApp
-        MnemosyneApp().run()
+        while True:
+            app = MnemosyneApp()
+            app.run()
+            if app.return_code == 42:
+                # Ctrl+O nel tab Claude: lancia sessione interattiva e poi riapre la TUI
+                claude_path = shutil.which("claude")
+                if claude_path:
+                    import subprocess
+                    subprocess.run([claude_path])
+            else:
+                break
         return
 
     conn = get_connection(config.get_db_path())

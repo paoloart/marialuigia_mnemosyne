@@ -85,14 +85,10 @@ class ClaudeScreen(Widget):
             log.write_error(f"Errore subprocess: {e}")
 
     async def action_open_interactive(self) -> None:
-        """Apre una sessione Claude Code interattiva sospendendo la TUI."""
+        """Esce dalla TUI, apre Claude interattivo, poi riavvia la TUI."""
         claude_path = shutil.which("claude")
         if not claude_path:
             log = self.query_one("#claude-log", LogPanel)
             log.write_error("Claude Code non trovato in PATH.")
             return
-        # app.suspend() cede il controllo del terminale al processo figlio
-        # e lo riprende quando l'utente esce dalla sessione Claude.
-        # Funziona su macOS Terminal, iTerm2, tmux. Non garantito in CI.
-        with self.app.suspend():
-            subprocess.run([claude_path])
+        self.app.exit(return_code=42)  # segnale speciale: rilancia TUI dopo Claude
