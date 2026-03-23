@@ -67,26 +67,30 @@ class DashboardScreen(Widget):
         self.run_worker(self._fetch_and_update(), exclusive=True, name="dash-refresh")
 
     async def _fetch_and_update(self) -> None:
+        log = self.query_one("#dash-log", LogPanel)
+
+        # DB e SEO — critici, mostra errore se falliscono
         try:
-            # Ogni to_thread ritorna un tipo diverso — i nomi devono corrispondere
-            # _fetch_db_data  → (db_stats_dict, emb_status_dict)
-            # _fetch_seo_data → (seo_summary_dict, cluster_info_dict)
-            # fetch_ga4_stats → dict | None
-            # fetch_gsc_stats → dict | None
-            db_result, seo_result, ga4_data, gsc_data = await asyncio.gather(
+            db_result, seo_result = await asyncio.gather(
                 asyncio.to_thread(self._fetch_db_data),
                 asyncio.to_thread(self._fetch_seo_data),
-                asyncio.to_thread(fetch_ga4_stats),
-                asyncio.to_thread(fetch_gsc_stats),
             )
             db_stats, emb_status = db_result
             seo_summary, cluster_info = seo_result
             self._update_db_panel(db_stats, emb_status)
             self._update_seo_panel(seo_summary, cluster_info)
-            self._update_ga4_panel(ga4_data, gsc_data)
         except Exception as e:
-            log = self.query_one("#dash-log", LogPanel)
-            log.write_error(f"[{datetime.now().strftime('%H:%M')}] Errore refresh: {e}")
+            log.write_error(f"[{datetime.now().strftime('%H:%M')}] Errore DB/SEO: {e}")
+
+        # GA4/GSC — opzionali, falliscono silenziosamente (ritornano None)
+        try:
+            ga4_data, gsc_data = await asyncio.gather(
+                asyncio.to_thread(fetch_ga4_stats),
+                asyncio.to_thread(fetch_gsc_stats),
+            )
+            self._update_ga4_panel(ga4_data, gsc_data)
+        except Exception:
+            self._update_ga4_panel(None, None)
 
     @staticmethod
     def _fetch_db_data() -> tuple:
