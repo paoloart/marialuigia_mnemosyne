@@ -28,6 +28,7 @@ class MnemosyneApp(App):
         ("1", "show_tab('dashboard')", "Dashboard"),
         ("2", "show_tab('commands')", "Comandi"),
         ("3", "show_tab('claude')", "Claude"),
+        ("r", "refresh", "Refresh"),
         ("q", "quit", "Esci"),
     ]
 
@@ -48,3 +49,10 @@ class MnemosyneApp(App):
 
     def action_show_tab(self, tab_id: str) -> None:
         self.query_one(TabbedContent).active = tab_id
+
+    def action_refresh(self) -> None:
+        from mnemosyne.tui.screens.dashboard import DashboardScreen
+        try:
+            self.query_one(DashboardScreen)._refresh_stats()
+        except Exception:
+            pass
