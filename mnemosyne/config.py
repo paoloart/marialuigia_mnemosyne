@@ -43,3 +43,9 @@ def get_sync_delay() -> float:
 def get_retry_max() -> int:
     _load()
     return int(os.environ.get("RETRY_MAX", "3"))
+
+
+@lru_cache
+def get_google_credentials_path() -> str:
+    _load()
+    return os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", "")
