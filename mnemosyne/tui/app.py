@@ -1,5 +1,4 @@
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, TabbedContent, TabPane
 
 
 class MnemosyneApp(App):
@@ -10,49 +9,17 @@ class MnemosyneApp(App):
     Screen {
         layout: vertical;
     }
-    TabbedContent {
-        height: 1fr;
-    }
-    TabbedContent ContentSwitcher {
-        height: 1fr;
-    }
-    TabPane {
-        height: 1fr;
-        padding: 0;
-    }
-    DashboardScreen, CommandsScreen, ClaudeScreen {
-        height: 1fr;
+    .panel-title {
+        text-style: bold;
+        color: $accent;
     }
     """
-    BINDINGS = [
-        ("1", "show_tab('dashboard')", "Dashboard"),
-        ("2", "show_tab('commands')", "Comandi"),
-        ("3", "show_tab('claude')", "Claude"),
-        ("r", "refresh", "Refresh"),
-        ("q", "quit", "Esci"),
-    ]
 
-    def compose(self) -> ComposeResult:
-        yield Header()
-        with TabbedContent(initial="dashboard"):
-            with TabPane("Dashboard", id="dashboard"):
-                # Screen caricata lazy per evitare import circolari
-                from mnemosyne.tui.screens.dashboard import DashboardScreen
-                yield DashboardScreen()
-            with TabPane("Comandi", id="commands"):
-                from mnemosyne.tui.screens.commands import CommandsScreen
-                yield CommandsScreen()
-            with TabPane("Claude", id="claude"):
-                from mnemosyne.tui.screens.claude import ClaudeScreen
-                yield ClaudeScreen()
-        yield Footer()
-
-    def action_show_tab(self, tab_id: str) -> None:
-        self.query_one(TabbedContent).active = tab_id
-
-    def action_refresh(self) -> None:
+    def on_mount(self) -> None:
         from mnemosyne.tui.screens.dashboard import DashboardScreen
-        try:
-            self.query_one(DashboardScreen)._refresh_stats()
-        except Exception:
-            pass
+        from mnemosyne.tui.screens.commands import CommandsScreen
+        from mnemosyne.tui.screens.claude import ClaudeScreen
+        self.install_screen(DashboardScreen(), name="dashboard")
+        self.install_screen(CommandsScreen(), name="commands")
+        self.install_screen(ClaudeScreen(), name="claude")
+        self.push_screen("dashboard")

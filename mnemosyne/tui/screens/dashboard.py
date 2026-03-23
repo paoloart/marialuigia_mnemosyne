@@ -1,8 +1,8 @@
 import asyncio
 from datetime import datetime
 from textual.app import ComposeResult
-from textual.widget import Widget
-from textual.widgets import Static, Label
+from textual.screen import Screen
+from textual.widgets import Header, Footer, Static, Label
 from textual.containers import Horizontal, Vertical
 from mnemosyne.tui.widgets.log_panel import LogPanel
 from mnemosyne.tui.widgets.status_panel import (
@@ -17,8 +17,18 @@ from mnemosyne import config
 from mnemosyne.db.connection import get_connection
 
 
-class DashboardScreen(Widget):
+class DashboardScreen(Screen):
     """Screen principale con stato del sistema."""
+
+    TITLE = "Mnemosyne — Maria Luigia"
+
+    BINDINGS = [
+        ("1", "app.switch_screen('dashboard')", "Dashboard"),
+        ("2", "app.switch_screen('commands')", "Comandi"),
+        ("3", "app.switch_screen('claude')", "Claude"),
+        ("r", "refresh_stats", "Refresh"),
+        ("q", "app.quit", "Esci"),
+    ]
 
     DEFAULT_CSS = """
     DashboardScreen {
@@ -44,6 +54,7 @@ class DashboardScreen(Widget):
     """
 
     def compose(self) -> ComposeResult:
+        yield Header()
         with Vertical():
             with Horizontal(id="columns"):
                 with Vertical(classes="panel"):
@@ -58,9 +69,13 @@ class DashboardScreen(Widget):
             with Vertical(id="log-section"):
                 yield Label("LOG RECENTI", classes="panel-title")
                 yield LogPanel(id="dash-log")
+        yield Footer()
 
     def on_mount(self) -> None:
         self.set_interval(30, self._refresh_stats)
+        self._refresh_stats()
+
+    def action_refresh_stats(self) -> None:
         self._refresh_stats()
 
     def _refresh_stats(self) -> None:

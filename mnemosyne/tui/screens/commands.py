@@ -4,8 +4,8 @@ import io
 import shutil
 from datetime import datetime
 from textual.app import ComposeResult
-from textual.widget import Widget
-from textual.widgets import Static, Label, Button
+from textual.screen import Screen
+from textual.widgets import Header, Footer, Static, Label, Button
 from textual.containers import Horizontal, Vertical
 from mnemosyne.tui.widgets.log_panel import LogPanel
 from mnemosyne import config
@@ -21,10 +21,16 @@ def _run_with_capture(fn, *args) -> str:
     return buf.getvalue()
 
 
-class CommandsScreen(Widget):
+class CommandsScreen(Screen):
     """Screen per triggerare i comandi pipeline."""
 
+    TITLE = "Mnemosyne — Maria Luigia"
+
     BINDINGS = [
+        ("1", "app.switch_screen('dashboard')", "Dashboard"),
+        ("2", "app.switch_screen('commands')", "Comandi"),
+        ("3", "app.switch_screen('claude')", "Claude"),
+        ("q", "app.quit", "Esci"),
         ("s", "run_command('btn-sync')", "Sync WP"),
         ("e", "run_command('btn-extract')", "Extract"),
         ("b", "run_command('btn-embeddings')", "Embeddings"),
@@ -65,6 +71,7 @@ class CommandsScreen(Widget):
         self._running = False
 
     def compose(self) -> ComposeResult:
+        yield Header()
         with Horizontal():
             with Vertical(id="cmd-list"):
                 yield Label("PIPELINE", classes="panel-title")
@@ -76,6 +83,7 @@ class CommandsScreen(Widget):
                 yield Button("[K] Backup DB", id="btn-backup", variant="default")
             with Vertical(id="cmd-output"):
                 yield LogPanel(id="cmd-log")
+        yield Footer()
 
     def action_run_command(self, btn_id: str) -> None:
         """Triggered by keyboard shortcuts."""

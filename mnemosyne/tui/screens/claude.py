@@ -3,15 +3,25 @@ import subprocess
 import shutil
 from datetime import datetime
 from textual.app import ComposeResult
-from textual.widget import Widget
-from textual.widgets import Input, Static
+from textual.screen import Screen
+from textual.widgets import Header, Footer, Input, Static
 from textual.containers import Vertical
 from textual.binding import Binding
 from mnemosyne.tui.widgets.log_panel import LogPanel
 
 
-class ClaudeScreen(Widget):
+class ClaudeScreen(Screen):
     """Screen per chat con Claude Code."""
+
+    TITLE = "Mnemosyne — Maria Luigia"
+
+    BINDINGS = [
+        ("1", "app.switch_screen('dashboard')", "Dashboard"),
+        ("2", "app.switch_screen('commands')", "Comandi"),
+        ("3", "app.switch_screen('claude')", "Claude"),
+        ("q", "app.quit", "Esci"),
+        Binding("ctrl+o", "open_interactive", "Sessione interattiva"),
+    ]
 
     DEFAULT_CSS = """
     ClaudeScreen {
@@ -34,17 +44,15 @@ class ClaudeScreen(Widget):
     }
     """
 
-    BINDINGS = [
-        Binding("ctrl+o", "open_interactive", "Sessione interattiva"),
-    ]
-
     def compose(self) -> ComposeResult:
+        yield Header()
         with Vertical():
             with Vertical(id="chat-log"):
                 yield LogPanel(id="claude-log")
             with Vertical(id="input-row"):
                 yield Input(placeholder="Scrivi un prompt per Claude...", id="chat-input")
             yield Static("[dim]Invio: invia prompt  |  Ctrl+O: apri sessione interattiva  |  (richiede claude in PATH)[/dim]", id="hint", markup=True)
+        yield Footer()
 
     def on_mount(self) -> None:
         claude_path = shutil.which("claude")
