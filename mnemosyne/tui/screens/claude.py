@@ -37,6 +37,8 @@ class ClaudeScreen(Screen):
     }
     #chat-input {
         width: 1fr;
+        color: $text;
+        background: $surface;
     }
     #hint {
         color: $text-muted;
