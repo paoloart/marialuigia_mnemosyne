@@ -39,6 +39,7 @@ def test_create_tables_creates_all_tables(db):
     expected = sorted([
         "posts", "categories", "tags", "post_categories", "post_tags",
         "internal_links", "external_links", "headings", "embeddings",
+        "dashboard_charts", "suggestions",
     ])
     assert tables == expected
 
@@ -47,7 +48,7 @@ def test_posts_table_columns(db):
     cursor = db.execute("PRAGMA table_info(posts)")
     columns = [row[1] for row in cursor.fetchall()]
     assert "id" in columns
-    assert "content_html" in columns
+    assert "content_raw" in columns
     assert "content_text" in columns
     assert "meta_description" in columns
     assert "content_text_hash" in columns
@@ -56,7 +57,7 @@ def test_posts_table_columns(db):
 
 def test_embeddings_composite_pk(db):
     db.execute(
-        "INSERT INTO posts (id, title, slug, url, content_html, status, date_published, date_modified) "
+        "INSERT INTO posts (id, title, slug, url, content_raw, status, date_published, date_modified) "
         "VALUES (1, 'Test', 'test', 'http://test', '<p>test</p>', 'publish', '2024-01-01', '2024-01-01')"
     )
     db.execute(
