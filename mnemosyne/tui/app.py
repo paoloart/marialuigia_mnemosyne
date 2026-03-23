@@ -7,7 +7,20 @@ class MnemosyneApp(App):
 
     TITLE = "Mnemosyne — Maria Luigia"
     CSS = """
+    Screen {
+        layout: vertical;
+    }
     TabbedContent {
+        height: 1fr;
+    }
+    TabbedContent ContentSwitcher {
+        height: 1fr;
+    }
+    TabPane {
+        height: 1fr;
+        padding: 0;
+    }
+    DashboardScreen, CommandsScreen, ClaudeScreen {
         height: 1fr;
     }
     """
