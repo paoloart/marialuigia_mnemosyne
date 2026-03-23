@@ -12,7 +12,7 @@ def db(tmp_path):
     conn = get_connection(str(tmp_path / "test.db"))
     create_tables(conn)
     conn.execute(
-        """INSERT INTO posts (id, title, slug, url, content_html, content_text,
+        """INSERT INTO posts (id, title, slug, url, content_raw, content_text,
         content_text_hash, status, date_published, date_modified, word_count)
         VALUES (1, 'Test', 'test', 'http://test', '<p>test</p>', 'This is test content',
         'abc123', 'publish', '2024-01-01', '2024-01-01', 4)"""
@@ -67,7 +67,7 @@ def test_generate_regenerates_on_hash_change(db):
 
 def test_generate_skips_posts_without_text(db):
     db.execute(
-        """INSERT INTO posts (id, title, slug, url, content_html, status, date_published, date_modified)
+        """INSERT INTO posts (id, title, slug, url, content_raw, status, date_published, date_modified)
         VALUES (2, 'No Text', 'no-text', 'http://test2', '<p>x</p>', 'publish', '2024-01-01', '2024-01-01')"""
     )
     db.commit()

@@ -45,17 +45,22 @@ def _upsert_post(conn: sqlite3.Connection, post: dict) -> None:
     yoast = post.get("yoast_head_json") or {}
     meta_desc = yoast.get("description")
 
+    content = post["content"]
+    content_raw = content.get("raw", content.get("rendered", ""))
+    content_rendered = content.get("rendered", "")
+
     conn.execute(
         """INSERT INTO posts
-        (id, title, slug, url, content_html, excerpt, status,
+        (id, title, slug, url, content_raw, content_rendered, excerpt, status,
          date_published, date_modified, author, featured_image_url,
          featured_image_alt, meta_description)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET
             title = excluded.title,
             slug = excluded.slug,
             url = excluded.url,
-            content_html = excluded.content_html,
+            content_raw = excluded.content_raw,
+            content_rendered = excluded.content_rendered,
             excerpt = excluded.excerpt,
             status = excluded.status,
             date_published = excluded.date_published,
@@ -70,7 +75,8 @@ def _upsert_post(conn: sqlite3.Connection, post: dict) -> None:
             post["title"]["rendered"],
             post["slug"],
             post["link"],
-            post["content"]["rendered"],
+            content_raw,
+            content_rendered,
             post["excerpt"]["rendered"],
             post["status"],
             post["date"],

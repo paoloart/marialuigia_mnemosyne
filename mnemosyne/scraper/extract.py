@@ -5,53 +5,97 @@ from urllib.parse import urlparse
 from mnemosyne.scraper.parser import extract_text, extract_headings, extract_links
 
 
+def _extract_post(conn: sqlite3.Connection, post: sqlite3.Row, site_domain: str) -> None:
+    """Extract text, headings, and links for a single post row."""
+    post_id = post["id"]
+    html = post["content_rendered"]
+    if not html:
+        return
+
+    # Extract clean text
+    text = extract_text(html)
+    text_hash = hashlib.sha256(text.encode()).hexdigest()
+    word_count = len(text.split())
+
+    conn.execute(
+        "UPDATE posts SET content_text = ?, content_text_hash = ?, word_count = ? WHERE id = ?",
+        (text, text_hash, word_count, post_id),
+    )
+
+    # Clear old derived data
+    conn.execute("DELETE FROM headings WHERE post_id = ?", (post_id,))
+    conn.execute("DELETE FROM internal_links WHERE source_post_id = ?", (post_id,))
+    conn.execute("DELETE FROM external_links WHERE source_post_id = ?", (post_id,))
+
+    # Headings
+    for heading in extract_headings(html):
+        conn.execute(
+            "INSERT INTO headings (post_id, level, text, position) VALUES (?, ?, ?, ?)",
+            (post_id, heading["level"], heading["text"], heading["position"]),
+        )
+
+    # Links
+    internal, external = extract_links(html, site_domain)
+
+    for link in internal:
+        target_post_id = _resolve_post_id(conn, link["url"], site_domain)
+        conn.execute(
+            "INSERT INTO internal_links (source_post_id, target_post_id, target_url, anchor_text) "
+            "VALUES (?, ?, ?, ?)",
+            (post_id, target_post_id, link["url"], link["anchor_text"]),
+        )
+
+    for link in external:
+        conn.execute(
+            "INSERT INTO external_links (source_post_id, target_url, anchor_text) VALUES (?, ?, ?)",
+            (post_id, link["url"], link["anchor_text"]),
+        )
+
+
+def resync_post(conn: sqlite3.Connection, post_id: int, wp_client, site_domain: str) -> None:
+    """Re-download a post from WP and re-extract everything.
+
+    Use after pushing content changes to WP. Downloads fresh content_raw
+    and content_rendered from WordPress, updates the DB, then re-extracts
+    text, headings, and links from the rendered HTML.
+    """
+    post = wp_client.get_post(post_id)
+    content = post["content"]
+
+    # Update both raw (Gutenberg) and rendered (HTML) from WP
+    conn.execute(
+        "UPDATE posts SET content_raw = ?, content_rendered = ?, date_modified = ? WHERE id = ?",
+        (content.get("raw", ""), content.get("rendered", ""), post["modified"], post_id),
+    )
+
+    # Re-extract from the fresh rendered content
+    row = conn.execute(
+        "SELECT id, content_rendered, url FROM posts WHERE id = ?", (post_id,)
+    ).fetchone()
+    if row:
+        _extract_post(conn, row, site_domain)
+
+    conn.commit()
+
+
+def extract_single(conn: sqlite3.Connection, post_id: int, site_domain: str) -> None:
+    """Re-extract text, headings, and links for a single post from its existing content_rendered."""
+    post = conn.execute(
+        "SELECT id, content_rendered, url FROM posts WHERE id = ?", (post_id,)
+    ).fetchone()
+    if not post:
+        return
+    _extract_post(conn, post, site_domain)
+    conn.commit()
+
+
 def extract_all(conn: sqlite3.Connection, site_domain: str) -> None:
-    """Extract text, headings, and links from all posts' content_html."""
-    posts = conn.execute("SELECT id, content_html, url FROM posts").fetchall()
+    """Extract text, headings, and links from all posts' content_rendered."""
+    posts = conn.execute("SELECT id, content_rendered, url FROM posts").fetchall()
     print(f"Extracting from {len(posts)} posts...")
 
     for post in posts:
-        post_id = post["id"]
-        html = post["content_html"]
-
-        # Extract clean text
-        text = extract_text(html)
-        text_hash = hashlib.sha256(text.encode()).hexdigest()
-        word_count = len(text.split())
-
-        conn.execute(
-            "UPDATE posts SET content_text = ?, content_text_hash = ?, word_count = ? WHERE id = ?",
-            (text, text_hash, word_count, post_id),
-        )
-
-        # Clear old derived data
-        conn.execute("DELETE FROM headings WHERE post_id = ?", (post_id,))
-        conn.execute("DELETE FROM internal_links WHERE source_post_id = ?", (post_id,))
-        conn.execute("DELETE FROM external_links WHERE source_post_id = ?", (post_id,))
-
-        # Headings
-        for heading in extract_headings(html):
-            conn.execute(
-                "INSERT INTO headings (post_id, level, text, position) VALUES (?, ?, ?, ?)",
-                (post_id, heading["level"], heading["text"], heading["position"]),
-            )
-
-        # Links
-        internal, external = extract_links(html, site_domain)
-
-        for link in internal:
-            target_post_id = _resolve_post_id(conn, link["url"], site_domain)
-            conn.execute(
-                "INSERT INTO internal_links (source_post_id, target_post_id, target_url, anchor_text) "
-                "VALUES (?, ?, ?, ?)",
-                (post_id, target_post_id, link["url"], link["anchor_text"]),
-            )
-
-        for link in external:
-            conn.execute(
-                "INSERT INTO external_links (source_post_id, target_url, anchor_text) VALUES (?, ?, ?)",
-                (post_id, link["url"], link["anchor_text"]),
-            )
+        _extract_post(conn, post, site_domain)
 
     conn.commit()
     print("Extraction complete.")

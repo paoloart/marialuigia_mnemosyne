@@ -51,8 +51,11 @@ class WPClient:
         return ids
 
     def get_post(self, post_id: int) -> dict:
-        """Fetch a single post by ID."""
-        resp = self._request(f"{self.api_url}/posts/{post_id}")
+        """Fetch a single post by ID with raw Gutenberg content."""
+        resp = self._request(
+            f"{self.api_url}/posts/{post_id}",
+            params={"context": "edit"},
+        )
         return resp.json()
 
     def get_categories(self) -> list[dict]:
@@ -62,6 +65,24 @@ class WPClient:
     def get_tags(self) -> list[dict]:
         """Fetch all tags."""
         return self._fetch_all(f"{self.api_url}/tags")
+
+    def update_post(self, post_id: int, data: dict) -> dict:
+        """Update a post via PUT. data can contain 'content', 'title', etc."""
+        for attempt in range(self.retry_max):
+            resp = requests.post(
+                f"{self.api_url}/posts/{post_id}",
+                json=data,
+                auth=self.auth,
+            )
+            if resp.status_code in (429, 500, 502, 503, 504):
+                wait = 2 ** attempt
+                print(f"HTTP {resp.status_code}, retrying in {wait}s...")
+                time.sleep(wait)
+                continue
+            resp.raise_for_status()
+            return resp.json()
+        resp.raise_for_status()
+        return resp.json()
 
     def _fetch_all(self, url: str) -> list[dict]:
         """Fetch all items from a paginated endpoint."""

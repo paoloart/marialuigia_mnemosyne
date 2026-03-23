@@ -35,7 +35,7 @@ def generate_embeddings(
 
         print(f"Generating embedding for post {post_id}...")
         response = openai_client.embeddings.create(input=text, model=model)
-        vector = np.array(response.data[0].embedding, dtype=np.float64)
+        vector = np.array(response.data[0].embedding, dtype=np.float32)
 
         conn.execute(
             "INSERT OR REPLACE INTO embeddings (post_id, model_name, vector, source_hash, created_at) "

@@ -10,4 +10,3 @@ pandas>=2.0.0
 google-analytics-data>=0.18.0
 google-api-python-client>=2.100.0
 google-auth>=2.23.0
-textual>=0.70.0

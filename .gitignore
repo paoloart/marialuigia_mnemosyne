@@ -1,4 +1,7 @@
 .env
+*.gserviceaccount.com.json
+ospedalemarialuigia-*.json
+.mcp.json
 data/*.db
 __pycache__/
 *.pyc

@@ -1,0 +1,141 @@
+/* ── Mnemosyne Dashboard — Premium Dark Theme ─────────────── */
+
+/* Global font smoothing */
+html, body, [class*="css"] {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Hide default hamburger menu and footer */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header[data-testid="stHeader"] {
+    background: rgba(14, 17, 23, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(45, 51, 59, 0.5);
+}
+
+/* Sidebar refinement */
+section[data-testid="stSidebar"] {
+    border-right: 1px solid rgba(45, 51, 59, 0.4);
+}
+section[data-testid="stSidebar"] > div:first-child {
+    padding-top: 2rem;
+}
+
+/* ── Metric cards ─────────────────────────────────────────── */
+div[data-testid="stMetric"] {
+    background: linear-gradient(135deg, #1a1f2e 0%, #151922 100%);
+    border: 1px solid rgba(0, 212, 170, 0.12);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+div[data-testid="stMetric"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 212, 170, 0.08);
+}
+div[data-testid="stMetric"] label {
+    color: #8b949e !important;
+    font-size: 0.78rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600 !important;
+}
+div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+    font-size: 1.8rem !important;
+    font-weight: 700 !important;
+    color: #e6edf3 !important;
+}
+div[data-testid="stMetric"] [data-testid="stMetricDelta"] {
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+}
+
+/* ── Containers / cards ───────────────────────────────────── */
+div[data-testid="stExpander"] {
+    background: #1a1f2e;
+    border: 1px solid #2d333b;
+    border-radius: 10px;
+    overflow: hidden;
+}
+div[data-testid="stExpander"] summary {
+    font-weight: 600;
+    color: #e6edf3;
+}
+
+/* Bordered containers (Live Canvas charts) */
+div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"] {
+    border: 1px solid rgba(0, 212, 170, 0.1) !important;
+    border-radius: 12px !important;
+    background: linear-gradient(135deg, #1a1f2e 0%, #151922 100%) !important;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+    padding: 0.5rem;
+}
+
+/* ── Tabs ─────────────────────────────────────────────────── */
+button[data-baseweb="tab"] {
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    padding: 0.6rem 1.2rem !important;
+    border-radius: 8px 8px 0 0 !important;
+}
+button[data-baseweb="tab"][aria-selected="true"] {
+    background: rgba(0, 212, 170, 0.1) !important;
+    border-bottom: 2px solid #00d4aa !important;
+}
+
+/* ── DataFrames ───────────────────────────────────────────── */
+div[data-testid="stDataFrame"] {
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #2d333b;
+}
+
+/* ── Progress bar ─────────────────────────────────────────── */
+div[data-testid="stProgress"] > div > div {
+    background-color: #2d333b !important;
+    border-radius: 8px !important;
+}
+div[data-testid="stProgress"] > div > div > div {
+    background: linear-gradient(90deg, #00d4aa, #00b894) !important;
+    border-radius: 8px !important;
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+button[kind="secondary"] {
+    border-radius: 8px !important;
+    border: 1px solid #2d333b !important;
+    transition: all 0.2s ease !important;
+}
+button[kind="secondary"]:hover {
+    border-color: #00d4aa !important;
+    color: #00d4aa !important;
+    background: rgba(0, 212, 170, 0.05) !important;
+}
+
+/* ── Slider ───────────────────────────────────────────────── */
+div[data-testid="stSlider"] > div > div > div {
+    color: #00d4aa !important;
+}
+
+/* ── Dividers ─────────────────────────────────────────────── */
+hr {
+    border-color: rgba(45, 51, 59, 0.5) !important;
+    margin: 1.5rem 0 !important;
+}
+
+/* ── Info/Warning/Success boxes ────────────────────────────── */
+div[data-testid="stAlert"] {
+    border-radius: 10px !important;
+    border: none !important;
+}
+
+/* ── Subheaders ───────────────────────────────────────────── */
+h3 {
+    color: #e6edf3 !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em;
+}

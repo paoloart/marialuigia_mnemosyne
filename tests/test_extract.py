@@ -11,8 +11,9 @@ def db(tmp_path):
     conn = get_connection(str(tmp_path / "test.db"))
     create_tables(conn)
     conn.execute(
-        """INSERT INTO posts (id, title, slug, url, content_html, status, date_published, date_modified)
+        """INSERT INTO posts (id, title, slug, url, content_raw, content_rendered, status, date_published, date_modified)
         VALUES (1, 'Test', 'test', 'https://marialuigia.com/test',
+        'raw gutenberg',
         '<h2>Titolo</h2><p>Testo con <a href="https://marialuigia.com/altro">link interno</a> e <a href="https://google.com">link esterno</a>.</p>',
         'publish', '2024-01-01', '2024-01-01')"""
     )

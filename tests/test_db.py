@@ -40,6 +40,8 @@ def test_create_tables_creates_all_tables(db):
         "posts", "categories", "tags", "post_categories", "post_tags",
         "internal_links", "external_links", "headings", "embeddings",
         "dashboard_charts", "suggestions",
+        "crawl_runs", "crawl_pages", "crawl_issues", "crawl_duplicates",
+        "crawl_images", "crawl_links",
     ])
     assert tables == expected
 
