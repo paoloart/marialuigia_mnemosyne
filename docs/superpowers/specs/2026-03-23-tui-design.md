@@ -145,28 +145,36 @@ Lista comandi con keybinding, output live nel pannello destro:
 ```
 set_interval(30s)
   └─> asyncio.to_thread(fetch_all_stats)
+        ├─ conn = get_connection()   # connessione locale al thread
         ├─ query SQLite: COUNT posts, embeddings per status
         ├─ seo/audit.py → orphan, thin, missing meta
-        └─> GA4/GSC clients sincroni (cache 300s esistente)
+        ├─ conn.close()
+        └─> GA4/GSC clients (chiamate HTTP) → dizionario risultati
               └─> update reactive attributes → re-render
 ```
 
-Sia le query SQLite che le chiamate GA4/GSC girano in `asyncio.to_thread()` per non bloccare la UI durante il refresh.
+**Regola connessioni SQLite:** ogni funzione eseguita in `asyncio.to_thread()` apre e chiude la propria connessione locale. Non si condivide mai una `conn` tra thread diversi (SQLite lancerebbe `ProgrammingError`).
+
+**Cache GA4/GSC:** i client `ga4_client.py` e `gsc_client.py` usano `@st.cache_data(ttl=300)` di Streamlit — questa cache è disponibile solo dentro Streamlit. Nella TUI si introduce una cache locale semplice: dizionario `_ga4_cache = {"data": None, "ts": 0}` nel modulo `widgets/status_panel.py`, aggiornato solo se `time.time() - ts > 300`.
 
 ### Esecuzione comandi (Commands screen)
 
-Le funzioni pipeline usano `print()` internamente. Per catturare l'output senza subprocess si usa `contextlib.redirect_stdout` con un `io.StringIO` buffer, poi si scrive nel LogPanel al termine (cattura batch, non streaming riga per riga):
+Le funzioni pipeline usano solo `print()` Python puro (nessun subprocess interno, nessun `os.write` diretto — verificato sul codice sorgente). Si cattura l'output con `contextlib.redirect_stdout` + `io.StringIO`, poi si scrive nel LogPanel al termine (cattura batch, non streaming):
 
 ```
 Tasto premuto
   └─> asyncio.to_thread(run_with_capture, fn, *args)
+        ├─ conn = get_connection()   # connessione locale al thread
         ├─ with redirect_stdout(StringIO()) as buf:
-        │      fn(*args)   # es. sync_all(conn, client)
+        │      fn(conn, *args)   # es. sync_all(conn, client)
+        ├─ conn.close()
         ├─ output = buf.getvalue()
         └─> post_message(LogLine(output)) → LogPanel aggiornato
 ```
 
 **Nota:** non è streaming real-time ma cattura al completamento. Per comandi lunghi (sync, embeddings) il pannello si aggiorna a fine esecuzione — accettabile dato che lo stato "running" è mostrato nel frattempo.
+
+**Nota `redirect_stdout`:** funziona solo su `sys.stdout` Python. Se in futuro una funzione pipeline usasse subprocess interni o `os.write`, questo approccio non cattura quell'output. Per ora va bene perché tutto usa `print()`.
 
 ### Chat Claude (Claude screen)
 
