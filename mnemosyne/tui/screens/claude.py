@@ -51,6 +51,10 @@ class ClaudeScreen(Widget):
         if not claude_path:
             log = self.query_one("#claude-log", LogPanel)
             log.write_error("Claude Code non trovato in PATH. Installa claude-code.")
+        self.query_one("#chat-input", Input).focus()
+
+    def on_show(self) -> None:
+        self.query_one("#chat-input", Input).focus()
 
     async def on_input_submitted(self, event: Input.Submitted) -> None:
         prompt = event.value.strip()
