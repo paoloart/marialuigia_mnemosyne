@@ -15,6 +15,11 @@ def main():
     # Late imports to avoid loading config (and requiring .env) at import time
     from mnemosyne import config
 
+    if command == "tui":
+        from mnemosyne.tui.app import MnemosyneApp
+        MnemosyneApp().run()
+        return
+
     conn = get_connection(config.get_db_path())
     create_tables(conn)
 
@@ -124,11 +129,6 @@ def main():
         elif command == "refresh-analytics":
             from mnemosyne.analytics.semantic_map import generate_semantic_map
             generate_semantic_map(conn)
-
-        elif command == "tui":
-            from mnemosyne.tui.app import MnemosyneApp
-            app = MnemosyneApp()
-            app.run()
 
         else:
             print(f"Unknown command: {command}")

@@ -24,6 +24,15 @@ def _run_with_capture(fn, *args) -> str:
 class CommandsScreen(Widget):
     """Screen per triggerare i comandi pipeline."""
 
+    BINDINGS = [
+        ("s", "run_command('btn-sync')", "Sync WP"),
+        ("e", "run_command('btn-extract')", "Extract"),
+        ("b", "run_command('btn-embeddings')", "Embeddings"),
+        ("a", "run_command('btn-analytics')", "Analytics"),
+        ("u", "run_command('btn-seo')", "SEO Audit"),
+        ("k", "run_command('btn-backup')", "Backup DB"),
+    ]
+
     DEFAULT_CSS = """
     CommandsScreen {
         height: 100%;
@@ -52,8 +61,6 @@ class CommandsScreen(Widget):
     }
     """
 
-    _running: bool = False
-
     def on_mount(self) -> None:
         self._running = False
 
@@ -70,10 +77,18 @@ class CommandsScreen(Widget):
             with Vertical(id="cmd-output"):
                 yield LogPanel(id="cmd-log")
 
+    def action_run_command(self, btn_id: str) -> None:
+        """Triggered by keyboard shortcuts."""
+        self._trigger(btn_id)
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if self._running:
             return
-        btn_id = event.button.id
+        self._trigger(event.button.id)
+
+    def _trigger(self, btn_id: str) -> None:
+        if self._running:
+            return
         commands = {
             "btn-sync": self._run_sync,
             "btn-extract": self._run_extract,

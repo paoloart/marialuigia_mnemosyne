@@ -60,10 +60,9 @@ def fetch_ga4_stats() -> dict | None:
     if _ga4_cache["data"] is not None and now - _ga4_cache["ts"] < _CACHE_TTL:
         return _ga4_cache["data"]
     try:
-        from mnemosyne.dashboard.ga4_client import GA4Client
+        from mnemosyne.dashboard import ga4_client
         from mnemosyne import config
-        client = GA4Client(config.get_google_credentials_path())
-        data = client.get_overview()
+        data = ga4_client.get_overview(config.get_google_credentials_path())
         _ga4_cache["data"] = data
         _ga4_cache["ts"] = now
         return data
@@ -77,10 +76,9 @@ def fetch_gsc_stats() -> dict | None:
     if _gsc_cache["data"] is not None and now - _gsc_cache["ts"] < _CACHE_TTL:
         return _gsc_cache["data"]
     try:
-        from mnemosyne.dashboard.gsc_client import GSCClient
+        from mnemosyne.dashboard import gsc_client
         from mnemosyne import config
-        client = GSCClient(config.get_google_credentials_path())
-        data = client.get_overview()
+        data = gsc_client.get_overview(config.get_google_credentials_path())
         _gsc_cache["data"] = data
         _gsc_cache["ts"] = now
         return data
